@@ -1,0 +1,109 @@
+Sub Main
+    | Target the nearest NPC enemy
+/echo Searching for an enemy...
+/target npc
+
+    | If no enemy is found, exit the macro
+/if (!${Target.ID}) {
+       /echo No enemy found! Exiting macro.
+       /endmacro
+}
+
+    | Move into attack range
+/echo Moving to enemy: ${Target.DisplayName}...
+/stick 10 move    
+
+    | Ensure target is engaged
+/echo Engaging ${Target.DisplayName} in combat...
+/attack on
+
+    | First, check if behind the enemy to backstab
+/if (${Me.Behind}) {
+       /echo Backstabbing ${Target.DisplayName}...
+       /doability Backstab
+} else {
+       | Move behind and then backstab
+       /stick behind loose
+       /doability Backstab
+}
+
+    | After backstab, use auto-attack
+/echo Using auto-attack on ${Target.DisplayName}...
+/attack on
+
+    | Combat loop
+/while (${Target.PctHPs} > 0) {
+
+       | Force Disarm every few seconds
+       /if (${Me.AbilityReady[Disarm]}) {
+              /echo Attempting to disarm ${Target.DisplayName}...
+              /doability Disarm
+              /delay 1s
+       }
+
+       | Use auto-attack after backstab
+       /echo Using auto-attack on ${Target.DisplayName}...
+       /attack on
+
+       | Small delay to prevent spam
+       /delay 1s
+}
+
+    | Stop auto-attack before looting
+/attack off
+/echo Combat complete! Checking for other enemies in range...
+
+    | Look for any other NPC enemies within 50 range
+/target npc radius 50
+/delay 1s
+
+    | If another enemy is found, engage it
+/if (${Target.ID} && ${Target.PctHPs} > 0) {
+       /echo New enemy detected! Targeting and engaging ${Target.DisplayName}...
+       /attack on
+       /stick 10 move
+       | Start combat with the new target
+       /while (${Target.PctHPs} > 0) {
+
+           | Check if behind enemy to backstab
+           /if (${Me.Behind}) {
+                  /echo Backstabbing ${Target.DisplayName}...
+                  /doability Backstab
+           } else {
+                  | Move behind and then backstab
+                  /stick behind loose
+                  /doability Backstab
+           }
+
+           | Force Disarm every few seconds
+           /if (${Me.AbilityReady[Disarm]}) {
+                  /echo Attempting to disarm ${Target.DisplayName}...
+                  /doability Disarm
+                  /delay 1s
+           }
+
+           | Use auto-attack after backstab
+           /echo Using auto-attack on ${Target.DisplayName}...
+           /attack on
+
+           | Small delay to prevent spam
+           /delay 1s
+       }
+} else {
+       /echo No new enemies found, continuing loot check...
+       /target corpse
+       /delay 1s
+
+       | Attempt to loot the corpse correctly
+       /if (${Target.Type.Equal[Corpse]}) {
+              /echo Looting ${Target.DisplayName}'s corpse...
+              /loot
+       } else {
+              /echo No lootable corpse found.
+       }
+}
+
+    | Final cleanup before ending
+/attack off
+/echo Macro finished! Exiting...
+/endmacro

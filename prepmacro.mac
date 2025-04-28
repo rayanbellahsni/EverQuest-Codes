@@ -1,0 +1,74 @@
+Sub Main
+    | Check if Tank and Damage are low HP, and heal them
+    | a for loop example to loop through group members and cast IVU on them]
+/echo First while loop
+/while (${Me.PctMana}<50) {
+       /if (${Me.Standing}) {
+       /echo Sitting because I am standing.
+       /sit
+       }
+       /echo Resting until my hitpoints (${Me.PctHPs}%) and mana (${Me.PctMana}%) are at 100%.
+       /delay 6s
+}
+
+    | setting a variable as global (would use local instead of outer for local variables)
+/declare j int outer
+
+| a for loop example to loop through group members and cast IVU on them
+/echo Second loop to do courage
+/for j 1 to ${Group} {  
+
+    | delay for spell refresh
+           /delay 10s
+
+    | target the j'th group member
+           /target ${Group.Member[${j}].CleanName}
+
+    | check to see if courage is active
+           /if ( !${Target.Buff.Courage} ) {
+        | verbosity
+                   /echo Making ${Group.Member[${j}].CleanName} the ${Group.Member[${j}].Race} ${Group.Member[${j}].Class} courageous 
+                   | cast the spell
+        /cast "Courage"
+       } else {
+        | verbosity
+                   /echo ${Group.Member[${j}].CleanName} is already invisible!
+       }
+
+}
+/next j
+
+/echo Healing loop
+/for j 1 to ${Group} {
+       /delay 10s
+       /target "Myself"
+       /while ( ${Target.PctHPs}<100 ) {
+              /echo Healing ${Group.Member[${j}].CleanName} to 100 HP
+       /cast "Minor Healing"
+       /delay 3s
+       }
+}
+/next j
+/echo Final loop
+/while ((${Me.PctMana}<100) && ( ${Me.PctHPs}<100 )) {
+       
+        /if (${Me.Standing}) {
+        /echo Sitting because I am standing.
+        /sit
+        }
+        /echo Resting until my hitpoints (${Me.PctHPs}%) and mana (${Me.PctMana}%) are at 100%.
+        /delay 6s
+        /if ((${Me.PctMana}<100) && ( ${Me.PctHPs}<100 )) {
+              /stand
+              /endmacro
+        }
+    }
+/endmacro
+
+
+
+            
+    
+    
+    
+    
